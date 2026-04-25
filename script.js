@@ -31,31 +31,38 @@ document.getElementById('btn-generar').addEventListener('click', async () => {
       .bindPopup("<b>🚗 Tu Aparcamiento</b>").openPopup();
 
     try {
-        // 2. Definir el Bounding Box (bbox) para GeoCouch. 
         // Buscamos en un radio de aprox 1km alrededor del parking (+- 0.01 grados)
+        // 2. Definir el Bounding Box (bbox)
         const radio = 0.01; 
         const min_lon = parkingLon - radio;
-        const min_lat = parkingLat - radio;
         const max_lon = parkingLon + radio;
+        const min_lat = parkingLat - radio;
         const max_lat = parkingLat + radio;
         
-        const bbox = `${min_lon},${min_lat},${max_lon},${max_lat}`;
-        
-        // 3. Petición HTTP a GeoCouch
-        const respuesta = await fetch(`${DB_URL}/_design/rutas/_spatial/puntos?bbox=${bbox}`, {
-            method: 'GET',
-            headers: { 'Authorization': authHeader }
+        // 3. Petición POST a CouchDB nativo (Mango Query)
+        // Sustituye a GeoCouch buscando qué coordenadas entran en la caja
+        const consultaMango = {
+            "selector": {
+                "geometry.coordinates.0": { "$gte": min_lon, "$lte": max_lon },
+                "geometry.coordinates.1": { "$gte": min_lat, "$lte": max_lat }
+            },
+            "limit": 50 // Límite de monumentos a devolver
+        };
+
+        const respuesta = await fetch(`${DB_URL}/_find`, {
+            method: 'POST',
+            headers: { 
+                'Authorization': authHeader,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(consultaMango)
         });
 
         if (!respuesta.ok) throw new Error("Error conectando con CouchDB");
         
         const datosGeo = await respuesta.json();
-        const monumentos = datosGeo.rows; // Array de resultados de GeoCouch
-
-        if(monumentos.length === 0) {
-            document.getElementById('lista-ruta').innerHTML = '<li>No hay monumentos cerca.</li>';
-            return;
-        }
+        // OJO: CouchDB devuelve 'docs', no 'rows' como hacía GeoCouch
+        const monumentos = datosGeo.docs;
 
         // 4. LÓGICA DE NEGOCIO: Algoritmo "Vecino Más Cercano"
         // Ordenamos los monumentos devueltos por GeoCouch para hacer una ruta lógica

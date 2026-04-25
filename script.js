@@ -1,5 +1,5 @@
 // Configuración de tu CouchDB Local
-const DB_URL = "http://127.0.0.1:5984/monumentos_app";
+const DB_URL = "https://mortuary-shorthand-trilogy.ngrok-free.dev";
 const USER = "admin";
 const PASS = "admin1234";
 // Creamos la cabecera de autenticación Básica (Base64)

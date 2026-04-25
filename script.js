@@ -1,5 +1,5 @@
 // Configuración de tu CouchDB Local
-const DB_URL = "https://mortuary-shorthand-trilogy.ngrok-free.dev";
+const DB_URL = "https://mortuary-shorthand-trilogy.ngrok-free.dev/monumentos_app"; // ✅ BIEN
 const authHeader = "Basic " + btoa("admin:admin1234");
 
 let mapa = L.map('mapa').setView([39.475, -6.372], 14);

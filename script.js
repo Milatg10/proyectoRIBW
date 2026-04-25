@@ -21,90 +21,51 @@ document.getElementById('btn-generar').addEventListener('click', async () => {
     const parkingLon = parseFloat(lonStr);
     const parkingLat = parseFloat(latStr);
 
-    // 1. Limpiar el mapa y la lista antes de generar la nueva ruta
     capaRuta.clearLayers();
     capaMarcadores.clearLayers();
-    document.getElementById('lista-ruta').innerHTML = 'Calculando ruta óptima...';
-
-    // Añadir el marcador del parking
+    
     L.marker([parkingLat, parkingLon]).addTo(capaMarcadores)
       .bindPopup("<b>🚗 Tu Aparcamiento</b>").openPopup();
 
-    try {
-        // Buscamos en un radio de aprox 1km alrededor del parking (+- 0.01 grados)
-        // 2. Definir el Bounding Box (bbox)
-        const radio = 0.01; 
-        const min_lon = parkingLon - radio;
-        const max_lon = parkingLon + radio;
-        const min_lat = parkingLat - radio;
-        const max_lat = parkingLat + radio;
-        
-        // 3. Petición POST a CouchDB nativo (Mango Query)
-        // Sustituye a GeoCouch buscando qué coordenadas entran en la caja
-        const consultaMango = {
-            "selector": {
-                "geometry.coordinates.0": { "$gte": min_lon, "$lte": max_lon },
-                "geometry.coordinates.1": { "$gte": min_lat, "$lte": max_lat }
-            },
-            "limit": 50 // Límite de monumentos a devolver
-        };
+    // =========================================================
+    // MODO PRUEBA: Datos simulados sin conectar a CouchDB
+    // =========================================================
+    const monumentos = [
+        { geometry: { coordinates: [-6.370, 39.474] }, value: "Torre de Bujaco" },
+        { geometry: { coordinates: [-6.371, 39.474] }, value: "Concatedral" },
+        { geometry: { coordinates: [-6.373, 39.473] }, value: "Iglesia de San Mateo" }
+    ];
 
-        const respuesta = await fetch(`${DB_URL}/_find`, {
-            method: 'POST',
-            headers: { 
-                'Authorization': authHeader,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(consultaMango)
-        });
+    // Lógica del "Vecino Más Cercano"
+    let rutaOrdenada = [];
+    let puntoActual = { lat: parkingLat, lon: parkingLon };
+    let pendientes = [...monumentos];
 
-        if (!respuesta.ok) throw new Error("Error conectando con CouchDB");
-        
-        const datosGeo = await respuesta.json();
-        // OJO: CouchDB devuelve 'docs', no 'rows' como hacía GeoCouch
-        const monumentos = datosGeo.docs;
+    while(pendientes.length > 0) {
+        let indexMasCercano = 0;
+        let distanciaMinima = Infinity;
 
-        // 4. LÓGICA DE NEGOCIO: Algoritmo "Vecino Más Cercano"
-        // Ordenamos los monumentos devueltos por GeoCouch para hacer una ruta lógica
-        let rutaOrdenada = [];
-        let puntoActual = { lat: parkingLat, lon: parkingLon };
-        let pendientes = [...monumentos];
-
-        while(pendientes.length > 0) {
-            // Buscar el más cercano al punto actual
-            let indexMasCercano = 0;
-            let distanciaMinima = Infinity;
-
-            for(let i=0; i < pendientes.length; i++) {
-                // GeoCouch devuelve [lon, lat]
-                let mLat = pendientes[i].geometry.coordinates[1];
-                let mLon = pendientes[i].geometry.coordinates[0];
-                
-                // Calculo de distancia básica (Pitágoras es suficiente para distancias tan cortas)
-                let dist = Math.pow(mLat - puntoActual.lat, 2) + Math.pow(mLon - puntoActual.lon, 2);
-                if(dist < distanciaMinima) {
-                    distanciaMinima = dist;
-                    indexMasCercano = i;
-                }
+        for(let i=0; i < pendientes.length; i++) {
+            let mLat = pendientes[i].geometry.coordinates[1];
+            let mLon = pendientes[i].geometry.coordinates[0];
+            
+            let dist = Math.pow(mLat - puntoActual.lat, 2) + Math.pow(mLon - puntoActual.lon, 2);
+            if(dist < distanciaMinima) {
+                distanciaMinima = dist;
+                indexMasCercano = i;
             }
-
-            // Añadir el ganador a la ruta y quitarlo de pendientes
-            let siguientePunto = pendientes.splice(indexMasCercano, 1)[0];
-            rutaOrdenada.push(siguientePunto);
-            // Actualizar mi posición
-            puntoActual = {
-                lat: siguientePunto.geometry.coordinates[1], 
-                lon: siguientePunto.geometry.coordinates[0]
-            };
         }
 
-        // 5. PINTAR RESULTADOS EN LA INTERFAZ
-        pintarRuta(rutaOrdenada, parkingLat, parkingLon);
-
-    } catch (error) {
-        console.error(error);
-        document.getElementById('lista-ruta').innerHTML = '<li style="color:red">Error: Asegúrate de que CouchDB está encendido y el CORS habilitado.</li>';
+        let siguientePunto = pendientes.splice(indexMasCercano, 1)[0];
+        rutaOrdenada.push(siguientePunto);
+        puntoActual = {
+            lat: siguientePunto.geometry.coordinates[1], 
+            lon: siguientePunto.geometry.coordinates[0]
+        };
     }
+
+    // Pintamos la ruta en el mapa
+    pintarRuta(rutaOrdenada, parkingLat, parkingLon);
 });
 
 function pintarRuta(rutaOrdenada, parkingLat, parkingLon) {

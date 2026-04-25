@@ -15,7 +15,7 @@ async function cargarParkings() {
         };
         const res = await fetch(`${DB_URL}/_find`, {
             method: 'POST',
-            headers: { 'Authorization': authHeader, 'Content-Type': 'application/json' },
+            headers: { 'Authorization': authHeader, 'Content-Type': 'application/json', 'ngrok-skip-browser-warning': 'true' }, //AQUI
             body: JSON.stringify(query)
         });
         const data = await res.json();
@@ -56,7 +56,7 @@ document.getElementById('btn-generar').addEventListener('click', async () => {
 
         const res = await fetch(`${DB_URL}/_find`, {
             method: 'POST',
-            headers: { 'Authorization': authHeader, 'Content-Type': 'application/json' },
+            headers: { 'Authorization': authHeader, 'Content-Type': 'application/json', 'ngrok-skip-browser-warning': 'true'}, //AQUI 
             body: JSON.stringify(query)
         });
         const data = await res.json();

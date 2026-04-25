@@ -1,5 +1,5 @@
 // Configuración de tu CouchDB Local
-const DB_URL = "https://all-rats-enjoy.loca.lt/monumentos_app"; // ✅ BIEN
+const DB_URL = "http://127.0.0.1:5984/monumentos_app"; // ✅ BIEN
 const authHeader = "Basic " + btoa("admin:admin1234");
 
 let mapa = L.map('mapa').setView([39.475, -6.372], 14);

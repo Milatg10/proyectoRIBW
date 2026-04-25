@@ -1,5 +1,5 @@
 // Configuración de tu CouchDB Local
-const DB_URL = "https://mortuary-shorthand-trilogy.ngrok-free.dev/monumentos_app"; // ✅ BIEN
+const DB_URL = "https://all-rats-enjoy.loca.lt/monumentos_app"; // ✅ BIEN
 const authHeader = "Basic " + btoa("admin:admin1234");
 
 let mapa = L.map('mapa').setView([39.475, -6.372], 14);
@@ -15,7 +15,7 @@ async function cargarParkings() {
         };
         const res = await fetch(`${DB_URL}/_find`, {
             method: 'POST',
-            headers: { 'Authorization': authHeader, 'Content-Type': 'application/json', 'ngrok-skip-browser-warning': 'true' }, //AQUI
+            headers: { 'Authorization': authHeader, 'Content-Type': 'application/json'}, 
             body: JSON.stringify(query)
         });
         const data = await res.json();
@@ -56,7 +56,7 @@ document.getElementById('btn-generar').addEventListener('click', async () => {
 
         const res = await fetch(`${DB_URL}/_find`, {
             method: 'POST',
-            headers: { 'Authorization': authHeader, 'Content-Type': 'application/json', 'ngrok-skip-browser-warning': 'true'}, //AQUI 
+            headers: { 'Authorization': authHeader, 'Content-Type': 'application/json'}, 
             body: JSON.stringify(query)
         });
         const data = await res.json();

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cáceres Flow - Rutas Inteligentes</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>📍 Cáceres Flow</h1>
+        <p>Tu ruta monumental optimizada con GeoCouch</p>
+    </header>
+
+    <main>
+        <section class="controles">
+            <label for="parking">¿Dónde has aparcado?</label>
+            <select id="parking">
+                <option value="-6.371,39.477">Parking Obispo Galarza</option>
+                <option value="-6.371,39.473">Parking Don Manuel</option>
+                <option value="-6.376,39.471">Parking Nuevo (San Antón)</option>
+            </select>
+            
+            <button id="btn-generar">Generar Ruta Más Cercana</button>
+        </section>
+
+        <div class="contenido">
+            <div id="mapa"></div>
+            
+            <aside id="itinerario">
+                <h2>Tu Itinerario</h2>
+                <ul id="lista-ruta">
+                    <li class="placeholder">Selecciona un parking para empezar...</li>
+                </ul>
+            </aside>
+        </div>
+    </main>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
